@@ -11,4 +11,9 @@ export class AppController {
       message: 'Server is running',
     };
   }
+
+  @Get('/hello')
+  getHello(): string {
+    return 'Hello World!';
+  }
 }

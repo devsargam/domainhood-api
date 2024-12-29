@@ -17,7 +17,7 @@ import {
   SignUpDto,
   signUpSchema,
 } from './auth.schema';
-import { ZodValidationPipe } from 'src/pipes/zod-validation.pipe';
+import { ZodValidationPipe } from '../pipes/zod-validation.pipe';
 
 @Controller('auth')
 export class AuthController {
