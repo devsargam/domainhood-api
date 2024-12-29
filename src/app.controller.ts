@@ -1,10 +1,8 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
-import { UserService } from './user/user.service';
-import { User as UserModel } from '@prisma/client';
+import { Controller, Get } from '@nestjs/common';
 
 @Controller()
 export class AppController {
-  constructor(private readonly userService: UserService) {}
+  constructor() {}
 
   @Get('/health')
   healthCheck(): { status: string; message: string } {
@@ -12,12 +10,5 @@ export class AppController {
       status: 'ok',
       message: 'Server is running',
     };
-  }
-
-  @Post('user')
-  async signupUser(
-    @Body() userData: { name?: string; email: string },
-  ): Promise<UserModel> {
-    return this.userService.createUser(userData);
   }
 }
