@@ -8,18 +8,95 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  name     String?
-  password String
-  posts    Post[]
+  id            String   @id @default(uuid())
+  email         String   @unique
+  name          String?
+  password      String
+  walletBalance Float    @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isVerified    Boolean  @default(false)
+
+  domains            Domain[]
+  listings           Listing[]
+  offers             Offer[]
+  buyerTransactions  Transaction[] @relation("buyer")
+  sellerTransactions Transaction[] @relation("seller")
+
+  @@map("users")
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  published Boolean? @default(false)
-  author    User?    @relation(fields: [authorId], references: [id])
-  authorId  Int?
+model Domain {
+  id               String   @id @default(uuid())
+  domainName       String   @unique
+  ownerId          String
+  registrationDate DateTime
+  expiryDate       DateTime
+  registrar        String
+  isVerified       Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  owner        User          @relation(fields: [ownerId], references: [id])
+  listings     Listing[]
+  transactions Transaction[]
+
+  @@map("domains")
+}
+
+model Listing {
+  id          String   @id @default(uuid())
+  domainId    String
+  sellerId    String
+  askingPrice Float
+  description String
+  status      String // Could be enum: ACTIVE, PENDING, SOLD, CANCELLED
+  listedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  isActive    Boolean  @default(true)
+
+  // Relations
+  domain      Domain       @relation(fields: [domainId], references: [id])
+  seller      User         @relation(fields: [sellerId], references: [id])
+  offers      Offer[]
+  transaction Transaction?
+
+  @@map("listings")
+}
+
+model Offer {
+  id        String   @id @default(uuid())
+  listingId String
+  buyerId   String
+  amount    Float
+  status    String // Could be enum: PENDING, ACCEPTED, REJECTED, EXPIRED
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  listing     Listing      @relation(fields: [listingId], references: [id])
+  buyer       User         @relation(fields: [buyerId], references: [id])
+  transaction Transaction?
+
+  @@map("offers")
+}
+
+model Transaction {
+  id            String   @id @default(uuid())
+  listingId     String   @unique
+  domainId      String
+  sellerId      String
+  buyerId       String
+  offerId       String?  @unique
+  finalPrice    Float
+  completedAt   DateTime @default(now())
+  status        String // Could be enum: PENDING, COMPLETED, FAILED
+  paymentMethod String
+
+  listing Listing @relation(fields: [listingId], references: [id])
+  domain  Domain  @relation(fields: [domainId], references: [id])
+  seller  User    @relation("seller", fields: [sellerId], references: [id])
+  buyer   User    @relation("buyer", fields: [buyerId], references: [id])
+  offer   Offer?  @relation(fields: [offerId], references: [id])
+
+  @@map("transactions")
 }
